@@ -10,7 +10,7 @@ app.use(cors());
 app.use(express.json());
 
 app.get("/", (req, res) => {
-  res.send("Todo Backend is live 🚀");
+  res.send("Todo Backend is live ");
 });
 
 mongoose
