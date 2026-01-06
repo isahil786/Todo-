@@ -1,50 +1,64 @@
-const express = require("express")
-const mongoose = require("mongoose")
-const cors = require("cors")
-const TodoModel = require('./Model/Todo')
+const express = require("express");
+const mongoose = require("mongoose");
+const cors = require("cors");
+const TodoModel = require("./Model/Todo");
 
-const app = express()
+const app = express();
 const port = process.env.PORT || 3000;
 
-app.use(cors())
-app.use(express.json())
+app.use(cors());
+app.use(express.json());
 
-mongoose.connect(
-  'mongodb+srv://disability:sahil786@asdp.ddmkvib.mongodb.net/test?retryWrites=true&w=majority'
-)
+app.get("/", (req, res) => {
+  res.send("Todo Backend is live 🚀");
+});
 
-app.get('/get', (req, res) => {
-  TodoModel.find()
-    .then(result => res.json(result))
-    .catch(error => res.json(error))
-})
+mongoose
+  .connect(process.env.MONGO_URI)
+  .then(() => console.log("MongoDB connected"))
+  .catch(err => console.error(err));
 
-app.put('/update/:id', async (req, res) => {
+app.get("/get", async (req, res) => {
   try {
-    const todo = await TodoModel.findById(req.params.id)
-    todo.done = !todo.done
-    await todo.save()
-    res.json(todo)
-  } catch (error) {
-    res.status(500).json(error)
+    const todos = await TodoModel.find();
+    res.json(todos);
+  } catch (err) {
+    res.status(500).json(err);
   }
-})
+});
 
-app.delete('/delete/:id', (req, res) => {
-  TodoModel.findByIdAndDelete(req.params.id)
-    .then(result => res.json(result))
-    .catch(error => res.json(error))
-})
+app.post("/add", async (req, res) => {
+  try {
+    const todo = await TodoModel.create({
+      task: req.body.task,
+      done: false
+    });
+    res.json(todo);
+  } catch (err) {
+    res.status(500).json(err);
+  }
+});
 
-app.post('/add', (req, res) => {
-  TodoModel.create({
-    task: req.body.task,
-    done: false
-  })
-    .then(result => res.json(result))
-    .catch(error => res.json(error))
-})
+app.put("/update/:id", async (req, res) => {
+  try {
+    const todo = await TodoModel.findById(req.params.id);
+    todo.done = !todo.done;
+    await todo.save();
+    res.json(todo);
+  } catch (err) {
+    res.status(500).json(err);
+  }
+});
+
+app.delete("/delete/:id", async (req, res) => {
+  try {
+    const todo = await TodoModel.findByIdAndDelete(req.params.id);
+    res.json(todo);
+  } catch (err) {
+    res.status(500).json(err);
+  }
+});
 
 app.listen(port, () => {
-  console.log('Server Running on Port:', port)
-})
+  console.log("Server running on port", port);
+});
